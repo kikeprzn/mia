@@ -21,11 +21,11 @@ Para cada una indica:
 
 ## Respuestas:
 
-Nombre: Tiktok
-Uso: La utilizo para entretenimiento. La aplicación usa algoritmos avanzados de recomendación/ML para personalización de contenido.
+**Nombre**: Tiktok  
+**Uso**: La utilizo para entretenimiento. La aplicación usa algoritmos avanzados de recomendación/ML para personalización de contenido.
 
-Nombre: Uber
-Uso: La utilizo para moverme de un punto A a un punto B, conectándome con conductores disponibles para transportarme. La aplicación usa varias técnicas que tienen que ver con problemas relacionados a ML/Optmización
+**Nombre**: Uber  
+**Uso**: La utilizo para moverme de un punto A a un punto B, conectándome con conductores disponibles para transportarme. La aplicación usa varias técnicas que tienen que ver con problemas relacionados a ML/Optmización
 
-Nombre: Google AI Mode
-Uso: Lo utilizo para obtener respuestas más elaboradas a mis búsquedas sin tener que indagar demasiado entre diferentes páginas. También me permite hacer preguntas adicionales sobre el tema directamente desde el buscador, sin necesidad de abrir una aplicación de LLM por separado.
+**Nombre**: Google AI Mode  
+**Uso**: Lo utilizo para obtener respuestas más elaboradas a mis búsquedas sin tener que indagar demasiado entre diferentes páginas. También me permite hacer preguntas adicionales sobre el tema directamente desde el buscador, sin necesidad de abrir una aplicación de LLM por separado.
