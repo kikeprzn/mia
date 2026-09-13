@@ -172,11 +172,11 @@ Frontier:  max size 4
 
 ### Comparación con UCS
 
-| Algoritmo | Path | Depth (carreteras) | Cost (km) | Expanded | Generated |
-| --------- | ---- | -----------------: | --------: | -------: | --------: |
-| Greedy    |      |                    |           |          |           |
-| A\*       |      |                    |           |          |           |
-| UCS       |      |                    |           |          |           |
+| Algoritmo | Path                                                 | Depth (carreteras) | Cost (km) | Expanded | Generated |
+| --------- | ---------------------------------------------------- | -----------------: | --------: | -------: | --------: |
+| Greedy    | Zerind -> Arad -> Sibiu -> Rimnicu Vilcea -> Craiova |                  4 |       441 |        4 |        13 |
+| A\*       | Zerind -> Arad -> Sibiu -> Rimnicu Vilcea -> Craiova |                  4 |       441 |        7 |        19 |
+| UCS       | Zerind -> Arad -> Sibiu -> Rimnicu Vilcea -> Craiova |                  4 |       441 |       10 |        26 |
 
 ### Cambio de destino
 
