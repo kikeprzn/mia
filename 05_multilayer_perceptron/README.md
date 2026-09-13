@@ -127,13 +127,15 @@ Según explicó usted en clase, después de varias capas la sigmoide puede hacer
 
 ### ReLU, softmax y categorical crossentropy
 
-| Versión                                   | Loss final | Tiempo | Resultado de clasificación |
-| ----------------------------------------- | ---------: | -----: | -------------------------- |
-| Sigmoide + MSE                            |            |        |                            |
-| ReLU + softmax + categorical crossentropy |            |        |                            |
+| Versión                                   | Loss final | Accuracy |
+| ----------------------------------------- | ---------: | -------: |
+| Sigmoide + MSE                            | 0.22250834 |   33.33% |
+| ReLU + softmax + categorical crossentropy | 0.19522931 |      98% |
 
-### Cambio en el número de neuronas
+La red con ReLU, softmax y categorical crossentropy logró clasificar correctamente el 98% de los datos, mientras que la red profunda con sigmoide y MSE obtuvo 33.33%. La curva de la nueva red también siguió bajando hasta terminar con un loss de 0.19523. Los valores de loss no se pueden comparar directamente porque cada red utiliza una función de pérdida diferente, pero la accuracy muestra que la nueva configuración clasificó mejor los datos de Iris.
 
-- **Topología:** 4 x 8 x 8 x 8 x 3
-- **Loss final:**
-- **Resultado observado:**
+![Resumen de la red profunda con ReLU y softmax](assets/keras-relu-summary.png)
+
+![Curva de loss de la red profunda con ReLU y softmax](assets/keras-relu-loss.png)
+
+![Comparación de accuracy entre ambas redes profundas](assets/keras-relu-sigmoid-accuracy.png)
