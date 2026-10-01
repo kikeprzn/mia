@@ -1,1 +1,7 @@
 /notes
+# final-project (RAG)
+final-project/chroma/
+.env
+final-project/venv/
+__pycache__/
+*.pyc

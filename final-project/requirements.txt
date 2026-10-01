@@ -1,0 +1,20 @@
+# Tested with Python 3.13
+
+# API
+fastapi==0.141.1
+uvicorn[standard]==0.54.0
+python-multipart==0.0.32
+
+# Vector index
+chromadb==1.5.9
+
+# Google AI (embeddings + generation)
+google-genai==2.25.0
+python-dotenv==1.2.3
+
+# PDF parsing
+pypdf==6.19.0
+
+# UI
+streamlit==1.64.0
+httpx==0.28.1
