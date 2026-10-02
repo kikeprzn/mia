@@ -57,6 +57,21 @@ def chunks_for(source: str) -> list[Chunk]:
     ]
     return sorted(chunks, key=lambda c: (c.page, c.index))
 
+def all_vectors() -> tuple[list[Chunk], list[list[float]]]:
+    result = _collection().get(include=["documents", "metadatas", "embeddings"])
+    chunks = [
+        Chunk(
+            id=id_,
+            title=meta["title"],
+            source=meta["source"],
+            page=meta["page"],
+            index=meta["index"],
+            text=text,
+        )
+        for id_, text, meta in zip(result["ids"], result["documents"], result["metadatas"])
+    ]
+    return chunks, [list(v) for v in result["embeddings"]]
+
 def upsert(chunks: list[Chunk], embeddings: list[list[float]]) -> None:
     if len(chunks) != len(embeddings):
         raise ValueError(f"{len(chunks)} chunks but {len(embeddings)} embeddings")

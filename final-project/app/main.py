@@ -10,11 +10,12 @@ from app.chunk import Chunk, chunk_pages
 from app.embed import embed_query, embed_documents
 from app.loader import load_pdf
 from app.generate import answer
-from app.schemas import AgitatorSpecs, Citation, CompareCell, CompareRequest, CompareResponse, CompareRow, Passage, QueryRequest, QueryResponse, IngestResponse, SelectRequest, SelectResponse, SourceInfo
+from app.schemas import AgitatorSpecs, Citation, MapNeighbor, MapPoint, MapQuestion, MapRequest, MapResponse, CompareCell, CompareRequest, CompareResponse, CompareRow, Passage, QueryRequest, QueryResponse, IngestResponse, SelectRequest, SelectResponse, SourceInfo
 from app.store import Retrieved, count, sources as list_sources, query as search, upsert
 from app.compare import UnknownSourcesError, compare as compare_models
 from app.specs import load_specs, select as select_models, update_specs
 from app.pages import DOCS_DIR, PageNotFoundError, render_page, safe_filename
+from app.embedding_map import family, project
 
 MAX_FILES = 20
 MAX_BYTES = 20 * 1024 * 1024 # 20 MB
@@ -190,3 +191,44 @@ def page_image(source: str, page: int) -> Response:
     except PageNotFoundError as e:
         raise HTTPException(404, str(e))
     return Response(content=image, media_type="image/jpeg", headers={"Cache-Control": "max-age=3600"})
+
+@app.post("/map", response_model=MapResponse)
+def embedding_map(req: MapRequest) -> MapResponse:
+    projection = project()
+    if projection is None:
+        raise HTTPException(404, "Hacen falta al menos 3 chunks indexados para dibujar el mapa")
+
+    question = None
+    if req.question:
+        try:
+            vector = embed_query(req.question)
+            retrieved = search(vector, req.top_k)
+        except RuntimeError as e:
+            raise HTTPException(503, str(e))
+        except errors.APIError as e:
+            raise HTTPException(502, f"Google AI error: {e}")
+        x, y = projection.place(vector)
+        question = MapQuestion(
+            text=req.question,
+            x=x,
+            y=y,
+            neighbors=[MapNeighbor(id=r.chunk.id, rank=r.rank, score=round(r.score, 4)) for r in retrieved],
+        )
+
+    return MapResponse(
+        points=[
+            MapPoint(
+                id=c.id,
+                title=c.title,
+                family=family(c.title),
+                source=c.source,
+                page=c.page,
+                text=c.text,
+                x=float(x),
+                y=float(y),
+            )
+            for c, (x, y) in zip(projection.chunks, projection.points)
+        ],
+        question=question,
+        explained=[round(v, 4) for v in projection.explained],
+    )

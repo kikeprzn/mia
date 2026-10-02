@@ -173,3 +173,43 @@ class ModelFit(BaseModel):
 class SelectResponse(BaseModel):
     matches: list[ModelFit]
     rejected: list[ModelFit]
+
+
+class MapRequest(BaseModel):
+    model_config = ConfigDict(
+        extra="forbid",
+        json_schema_extra={"examples": [{"question": "¿Qué materiales de fabricación tiene el agitador RT-RTG?", "top_k": 3}]},
+    )
+
+    question: Question | None = None
+    top_k: int = Field(3, ge=1, le=10)
+
+
+class MapPoint(BaseModel):
+    id: str
+    title: str
+    family: str
+    source: str
+    page: int
+    text: str
+    x: float
+    y: float
+
+
+class MapNeighbor(BaseModel):
+    id: str
+    rank: int
+    score: float
+
+
+class MapQuestion(BaseModel):
+    text: str
+    x: float
+    y: float
+    neighbors: list[MapNeighbor]  # the real top-k, measured in all dimensions
+
+
+class MapResponse(BaseModel):
+    points: list[MapPoint]
+    question: MapQuestion | None
+    explained: list[float]  # share of the variation kept by each of the two axes

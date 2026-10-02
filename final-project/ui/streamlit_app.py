@@ -15,6 +15,7 @@ pg = st.navigation([
     st.Page("views/chat.py", title="Preguntar", icon="💬", default=True),
     st.Page("views/compare.py", title="Comparar", icon="📊"),
     st.Page("views/select.py", title="Seleccionar", icon="🎯"),
+    st.Page("views/map.py", title="Mapa", icon="🗺️"),
 ])
 
 with st.sidebar:
