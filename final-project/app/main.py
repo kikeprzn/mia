@@ -1,7 +1,7 @@
 import io
 from pathlib import Path
 
-from fastapi import FastAPI, HTTPException, File, UploadFile
+from fastapi import FastAPI, HTTPException, File, Response, UploadFile
 from fastapi.middleware.cors import CORSMiddleware
 from pypdf.errors import PdfReadError
 from google.genai import errors
@@ -14,6 +14,7 @@ from app.schemas import AgitatorSpecs, Citation, CompareCell, CompareRequest, Co
 from app.store import Retrieved, count, sources as list_sources, query as search, upsert
 from app.compare import UnknownSourcesError, compare as compare_models
 from app.specs import load_specs, select as select_models, update_specs
+from app.pages import DOCS_DIR, PageNotFoundError, render_page, safe_filename
 
 MAX_FILES = 20
 MAX_BYTES = 20 * 1024 * 1024 # 20 MB
@@ -85,7 +86,10 @@ def ingest(files: list[UploadFile] = File(...)) -> IngestResponse:
     skipped: list[str] = []
 
     for upload in files:
-        name = Path(upload.filename or "sin_nombre.pdf").name
+        name = safe_filename(upload.filename or "")
+        if name is None:
+            skipped.append(f"{upload.filename!r}: nombre de archivo no válido")
+            continue
         data = upload.file.read(MAX_BYTES + 1)
 
         if len(data) > MAX_BYTES:
@@ -107,6 +111,9 @@ def ingest(files: list[UploadFile] = File(...)) -> IngestResponse:
 
         all_chunks += chunks
         documents += 1
+        # Keep the PDF so its pages can be shown next to citations.
+        (DOCS_DIR / name).write_bytes(data)
+        render_page.cache_clear()
 
     if all_chunks:
         try:
@@ -175,3 +182,11 @@ def select(req: SelectRequest) -> SelectResponse:
     if not specs:
         raise HTTPException(404, "Aún no hay especificaciones extraídas: indexa los catálogos o ejecuta python -m scripts.build_specs")
     return select_models(req, specs)
+
+@app.get("/pages/{source}/{page}", response_class=Response)
+def page_image(source: str, page: int) -> Response:
+    try:
+        image = render_page(source, page)
+    except PageNotFoundError as e:
+        raise HTTPException(404, str(e))
+    return Response(content=image, media_type="image/jpeg", headers={"Cache-Control": "max-age=3600"})

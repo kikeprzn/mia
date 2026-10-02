@@ -5,6 +5,7 @@ from __future__ import annotations
 import streamlit as st
 
 from api import COMPARE_TIMEOUT, HEALTH_TIMEOUT, call_api
+from brochure import show_page
 
 MAX_MODELS = 4
 
@@ -28,7 +29,10 @@ def render_passages(result: dict) -> None:
     st.caption("Pasajes usados")
     for p in result["passages"]:
         with st.expander(f"[{p['n']}] {p['title']}, p. {p['page']}"):
-            st.text(p["text"])
+            text, page = st.columns(2)
+            text.text(p["text"])
+            with page:
+                show_page(p["source"], p["page"], p["title"])
 
 
 st.title("Comparar agitadores")

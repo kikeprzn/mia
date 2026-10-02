@@ -5,6 +5,7 @@ from __future__ import annotations
 import streamlit as st
 
 from api import QUERY_TIMEOUT, call_api
+from brochure import show_page
 
 
 def render_answer(response: dict) -> None:
@@ -21,8 +22,11 @@ def render_answer(response: dict) -> None:
         mark = "  ✓ citado" if c["cited"] else ""
         label = f"[{c['n']}] {c['title']}, p. {c['page']} · score {c['score']:.3f}{mark}"
         with st.expander(label):
-            st.caption(c["source"])
-            st.text(c["text"])
+            text, page = st.columns(2)
+            text.caption(c["source"])
+            text.text(c["text"])
+            with page:
+                show_page(c["source"], c["page"], c["title"])
 
 
 st.title("Asistente de agitadores Autmix")

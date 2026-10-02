@@ -5,6 +5,7 @@ from __future__ import annotations
 import streamlit as st
 
 from api import HEALTH_TIMEOUT, QUERY_TIMEOUT, call_api
+from brochure import show_page
 
 # (field, label, unit, step) in the same order as the API's checks
 NUMBERS = [
@@ -72,6 +73,12 @@ if "selection" in st.session_state:
             with st.container(border=True):
                 st.markdown(f"**{fit['title']}**")
                 render_fit(fit)
+                pages = sorted({p for c in fit["checks"] for p in c["pages"]})
+                if pages:
+                    with st.expander("Ver páginas citadas"):
+                        for column, page in zip(st.columns(len(pages)), pages):
+                            with column:
+                                show_page(fit["source"], page, fit["title"])
     else:
         st.warning("Ningún modelo cumple todos los requisitos.")
     if rejected:
