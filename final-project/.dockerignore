@@ -1,0 +1,8 @@
+venv/
+chroma/
+specs.json
+.env
+data/
+evidence/
+**/__pycache__/
+*.pyc

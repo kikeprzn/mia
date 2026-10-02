@@ -4,13 +4,15 @@ The Retrieved shape is adapted from the course's RAG/project/rag/retrieve.py.
 """
 
 from __future__ import annotations
+import os
 from dataclasses import dataclass
 from functools import lru_cache
 from pathlib import Path
 from app.chunk import Chunk
 import chromadb
 
-CHROMA_PATH = Path(__file__).resolve().parent.parent / "chroma"
+# RAG_CHROMA_PATH lets Docker keep the index in a volume.
+CHROMA_PATH = Path(os.getenv("RAG_CHROMA_PATH", Path(__file__).resolve().parent.parent / "chroma"))
 COLLECTION = "autmix_agitators"
 
 @dataclass(frozen=True)

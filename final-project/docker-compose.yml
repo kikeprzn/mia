@@ -1,0 +1,39 @@
+services:
+  api:
+    build: .
+    image: autmix-rag
+    command: uvicorn app.main:app --host 0.0.0.0 --port 8000
+    env_file: .env
+    environment:
+      RAG_CHROMA_PATH: /app/index/chroma
+      RAG_SPECS_PATH: /app/index/specs.json
+    volumes:
+      - ./data:/app/data
+      - index:/app/index
+    ports:
+      - "127.0.0.1:8000:8000"
+    healthcheck:
+      test:
+        [
+          "CMD",
+          "python",
+          "-c",
+          "import urllib.request; urllib.request.urlopen('http://127.0.0.1:8000/health')",
+        ]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  ui:
+    image: autmix-rag
+    command: streamlit run ui/streamlit_app.py --server.address 0.0.0.0 --server.port 8501 --server.headless true
+    environment:
+      RAG_API_URL: http://api:8000
+    ports:
+      - "127.0.0.1:8501:8501"
+    depends_on:
+      api:
+        condition: service_healthy
+
+volumes:
+  index:

@@ -8,6 +8,7 @@ and the same every time.
 from __future__ import annotations
 
 import json
+import os
 from pathlib import Path
 
 from google.genai import types
@@ -19,7 +20,7 @@ from app.generate import GENERATE_MODEL
 from app.schemas import AgitatorSpecs, Check, ModelFit, ParsedRequirements, SelectRequest, SelectResponse, SpecRange
 from app.store import chunks_for
 
-SPECS_PATH = Path(__file__).resolve().parent.parent / "specs.json"
+SPECS_PATH = Path(os.getenv("RAG_SPECS_PATH", Path(__file__).resolve().parent.parent / "specs.json"))
 
 # (field, label shown to users, unit)
 FIELDS = [
