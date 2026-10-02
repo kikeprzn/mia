@@ -3,6 +3,7 @@ from pathlib import Path
 from dotenv import load_dotenv
 from functools import lru_cache
 
+import httpx
 from google.genai import Client, types
 
 
@@ -19,7 +20,16 @@ def get_client() -> Client:
     
     # Google returns 429/503 when the model is busy; retry those with backoff.
     retry = types.HttpRetryOptions(attempts=5, initial_delay=1.0, http_status_codes=[429, 503])
-    return Client(api_key=api_key, http_options=types.HttpOptions(retry_options=retry))
+    return Client(
+        api_key=api_key,
+        http_options=types.HttpOptions(
+            retry_options=retry,
+            # Connect over IPv4: on networks with a broken IPv6 route, httpx waits
+            # for the IPv6 attempt to time out on every request.
+            client_args={"transport": httpx.HTTPTransport(local_address="0.0.0.0")},
+            timeout=60_000,  # ms; a network problem becomes an error, not a hang
+        ),
+    )
 
 def _embed(texts: list[str], task_type: str) -> list[list[float]]:
     client = get_client()
