@@ -42,14 +42,65 @@ class Citation(BaseModel):
     score: float
     cited: bool
 
-
 class QueryResponse(BaseModel):
     answer: str
     citations: list[Citation]
     abstained: bool
 
-
 class IngestResponse(BaseModel):
     documents: int
     chunks: int
     skipped: list[str]  # files that produced no chunks, with the reason
+
+class SourceInfo(BaseModel):
+    source: str
+    title: str
+    chunks: int
+
+class CompareRequest(BaseModel):
+    model_config = ConfigDict(
+        extra="forbid",
+        json_schema_extra={
+            "examples": [
+                {
+                    "sources": [
+                        "Autmix_Mixing_Solutions_Agitadores_Verticales_RT_RTG.pdf",
+                        "Autmix_Mixing_Solutions_Agitadores_Verticales_RT_RTN.pdf",
+                    ]
+                }
+            ]
+        }
+
+    )
+    sources: list[str] = Field(min_length=2, max_length=4)
+    
+    @field_validator("sources")
+    @classmethod
+    def distinct_sources(cls, value: list[str]) -> list[str]:
+        if len(set(value)) != len(value):
+            raise ValueError("los modelos deben ser distintos")
+        return value
+
+class CompareCell(BaseModel):
+    value: str
+    citations: list[int]
+
+
+class CompareRow(BaseModel):
+    aspect: str
+    cells: list[CompareCell]  # one per model, in the same order as CompareResponse.models
+
+
+class Passage(BaseModel):
+    n: int
+    id: str
+    title: str
+    source: str
+    page: int
+    text: str
+
+
+class CompareResponse(BaseModel):
+    models: list[SourceInfo]
+    rows: list[CompareRow]
+    passages: list[Passage]

@@ -10,8 +10,9 @@ from app.chunk import Chunk, chunk_pages
 from app.embed import embed_query, embed_documents
 from app.loader import load_pdf
 from app.generate import answer
-from app.schemas import Citation, QueryRequest, QueryResponse, IngestResponse
-from app.store import Retrieved, count, query as search, upsert
+from app.schemas import Citation, CompareCell, CompareRequest, CompareResponse, CompareRow, Passage, QueryRequest, QueryResponse, IngestResponse, SourceInfo
+from app.store import Retrieved, count, sources as list_sources, query as search, upsert
+from app.compare import UnknownSourcesError, compare as compare_models
 
 MAX_FILES = 20
 MAX_BYTES = 20 * 1024 * 1024 # 20 MB
@@ -116,3 +117,40 @@ def ingest(files: list[UploadFile] = File(...)) -> IngestResponse:
         upsert(all_chunks, embeddings)
 
     return IngestResponse(documents=documents, chunks=len(all_chunks), skipped=skipped)
+
+@app.get("/sources", response_model=list[SourceInfo])
+def sources() -> list[SourceInfo]:
+    return [SourceInfo(**s) for s in list_sources()]
+
+@app.post("/compare", response_model=CompareResponse)
+def compare(req: CompareRequest) -> CompareResponse:
+    try:
+        result = compare_models(req.sources)
+    except UnknownSourcesError as e:
+        raise HTTPException(404, f"No están indexados: {', '.join(e.sources)}")
+    except RuntimeError as e:
+        raise HTTPException(503, str(e))
+    except errors.APIError as e:
+        raise HTTPException(502, f"Google AI error: {e}")
+    
+    return CompareResponse(
+        models=[
+            SourceInfo(
+                source=source,
+                title=title,
+                chunks=sum(1 for _, c in result.passages if c.source == source),
+            )
+            for source, title in zip(req.sources, result.titles)
+        ],
+        rows=[
+            CompareRow(
+                aspect=row.aspect,
+                cells=[CompareCell(value=c.value, citations=c.citations) for c in row.cells],
+            )
+            for row in result.rows
+        ],
+        passages=[
+            Passage(n=n, id=c.id, title=c.title, source=c.source, page=c.page, text=c.text)
+            for n, c in result.passages
+        ],
+    )

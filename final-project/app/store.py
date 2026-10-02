@@ -31,6 +31,31 @@ def _collection():
 def count() -> int:
     return _collection().count()
 
+def sources() -> list[dict]:
+    result = _collection().get(include=["metadatas"])
+    counts: dict[tuple[str, str], int] = {}
+    for meta in result["metadatas"]:
+        key = (meta["source"], meta["title"])
+        counts[key] = counts.get(key, 0) + 1
+    return [
+        {"source": source, "title": title, "chunks": n}
+        for (source, title), n in sorted(counts.items(), key=lambda item: item[0][1])
+    ]
+
+def chunks_for(source: str) -> list[Chunk]:
+    result = _collection().get(where={"source": source}, include=["documents", "metadatas"])
+    chunks = [
+        Chunk(
+            id=id_,
+            title=meta["title"],
+            source=meta["source"],
+            page=meta["page"],
+            index=meta["index"],
+            text=text
+        )
+        for id_, text, meta in zip(result["ids"], result["documents"], result["metadatas"])
+    ]
+    return sorted(chunks, key=lambda c: (c.page, c.index))
 
 def upsert(chunks: list[Chunk], embeddings: list[list[float]]) -> None:
     if len(chunks) != len(embeddings):

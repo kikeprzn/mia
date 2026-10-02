@@ -5,3 +5,4 @@ final-project/chroma/
 final-project/venv/
 __pycache__/
 *.pyc
+.claude/
