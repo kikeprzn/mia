@@ -10,6 +10,11 @@ compare models side by side, select the models that meet a set of
 requirements, show the brochure page behind every citation, and draw the
 index as a map.
 
+The assignment's report is [`REPORT.md`](./REPORT.md) (in Spanish): the
+corpus, how it's chunked and why, the abstention rule with the scores behind
+it, and what Google AI and ChromaDB each do. This README covers how to run
+the system and how it works.
+
 | Layer | Technology | Role |
 |---|---|---|
 | UI | Streamlit | Ask, compare, select and explore; shows answers with their sources, scores and pages |
@@ -392,6 +397,8 @@ chunk.
 
 ```
 final-project/
+  README.md            this file: running and design
+  REPORT.md            the assignment's report (in Spanish)
   app/
     main.py            FastAPI app: every endpoint
     schemas.py         request and response models

@@ -25,5 +25,5 @@ abstaining when the brochures don't contain the answer. Built with Streamlit,
 FastAPI, ChromaDB and Google AI, it also compares models, selects them by
 requirements, shows the brochure page behind each citation and maps the index.
 
-See the [project README](./final-project/README.md) to run it, and the
+See the [project README](./final-project/README.md) to run it and see the evidences, and the
 [report](./final-project/REPORT.md) (in Spanish) for the design decisions.
