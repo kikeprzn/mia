@@ -10,10 +10,10 @@ from app.chunk import Chunk, chunk_pages
 from app.embed import embed_query, embed_documents
 from app.loader import load_pdf
 from app.generate import answer
-from app.schemas import AgitatorSpecs, Citation, MapNeighbor, MapPoint, MapQuestion, MapRequest, MapResponse, CompareCell, CompareRequest, CompareResponse, CompareRow, Passage, QueryRequest, QueryResponse, IngestResponse, SelectRequest, SelectResponse, SourceInfo
+from app.schemas import AgitatorSpecs, Citation, MapNeighbor, MapPoint, MapQuestion, MapRequest, MapResponse, CompareCell, CompareRequest, CompareResponse, CompareRow, Passage, QueryRequest, QueryResponse, IngestResponse, ParseRequest, ParsedRequirements, SelectRequest, SelectResponse, SourceInfo
 from app.store import Retrieved, count, sources as list_sources, query as search, upsert
 from app.compare import UnknownSourcesError, compare as compare_models
-from app.specs import load_specs, select as select_models, update_specs
+from app.specs import load_specs, parse_request, select as select_models, update_specs
 from app.pages import DOCS_DIR, PageNotFoundError, render_page, safe_filename
 from app.embedding_map import family, project
 
@@ -176,6 +176,16 @@ def compare(req: CompareRequest) -> CompareResponse:
 @app.get("/specs", response_model=list[AgitatorSpecs])
 def specs() -> list[AgitatorSpecs]:
     return list(load_specs().values())
+
+@app.post("/select/parse", response_model=ParsedRequirements)
+def parse_selection(req: ParseRequest) -> ParsedRequirements:
+    materials = sorted({m for s in load_specs().values() for m in s.materials})
+    try:
+        return parse_request(req.text, materials)
+    except RuntimeError as e:
+        raise HTTPException(503, str(e))
+    except errors.APIError as e:
+        raise HTTPException(502, f"Google AI error: {e}")
 
 @app.post("/select", response_model=SelectResponse)
 def select(req: SelectRequest) -> SelectResponse:

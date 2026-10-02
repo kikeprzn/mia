@@ -213,3 +213,23 @@ class MapResponse(BaseModel):
     points: list[MapPoint]
     question: MapQuestion | None
     explained: list[float]  # share of the variation kept by each of the two axes
+
+
+class ParseRequest(BaseModel):
+    model_config = ConfigDict(
+        extra="forbid",
+        json_schema_extra={"examples": [{"text": "Tanque de 3 m³ en titanio con motor de 4 kW"}]},
+    )
+
+    text: Question
+
+
+class ParsedRequirements(BaseModel):
+    tank_volume_m3: float | None = None
+    propeller_diameter_mm: float | None = None
+    anchor_diameter_mm: float | None = None
+    shaft_length_mm: float | None = None
+    motor_power_kw: float | None = None
+    output_speed_rpm: float | None = None
+    material: str | None = None
+    unsupported: list[str] = []  # parts of the request the selector can't filter on
