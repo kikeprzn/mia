@@ -6,3 +6,4 @@ final-project/venv/
 __pycache__/
 *.pyc
 .claude/
+final-project/specs.json

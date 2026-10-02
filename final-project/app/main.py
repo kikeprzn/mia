@@ -10,9 +10,10 @@ from app.chunk import Chunk, chunk_pages
 from app.embed import embed_query, embed_documents
 from app.loader import load_pdf
 from app.generate import answer
-from app.schemas import Citation, CompareCell, CompareRequest, CompareResponse, CompareRow, Passage, QueryRequest, QueryResponse, IngestResponse, SourceInfo
+from app.schemas import AgitatorSpecs, Citation, CompareCell, CompareRequest, CompareResponse, CompareRow, Passage, QueryRequest, QueryResponse, IngestResponse, SelectRequest, SelectResponse, SourceInfo
 from app.store import Retrieved, count, sources as list_sources, query as search, upsert
 from app.compare import UnknownSourcesError, compare as compare_models
+from app.specs import load_specs, select as select_models, update_specs
 
 MAX_FILES = 20
 MAX_BYTES = 20 * 1024 * 1024 # 20 MB
@@ -116,7 +117,16 @@ def ingest(files: list[UploadFile] = File(...)) -> IngestResponse:
             raise HTTPException(502, f"Google AI error: {e}")
         upsert(all_chunks, embeddings)
 
-    return IngestResponse(documents=documents, chunks=len(all_chunks), skipped=skipped)
+    # The brochure is already indexed at this point, so a failed extraction is
+    # reported as a warning instead of failing the whole upload.
+    warnings: list[str] = []
+    for source in sorted({c.source for c in all_chunks}):
+        try:
+            update_specs(source)
+        except (errors.APIError, ValueError) as e:
+            warnings.append(f"{source}: no se pudieron extraer las especificaciones ({e})")
+
+    return IngestResponse(documents=documents, chunks=len(all_chunks), skipped=skipped, warnings=warnings)
 
 @app.get("/sources", response_model=list[SourceInfo])
 def sources() -> list[SourceInfo]:
@@ -154,3 +164,14 @@ def compare(req: CompareRequest) -> CompareResponse:
             for n, c in result.passages
         ],
     )
+
+@app.get("/specs", response_model=list[AgitatorSpecs])
+def specs() -> list[AgitatorSpecs]:
+    return list(load_specs().values())
+
+@app.post("/select", response_model=SelectResponse)
+def select(req: SelectRequest) -> SelectResponse:
+    specs = list(load_specs().values())
+    if not specs:
+        raise HTTPException(404, "Aún no hay especificaciones extraídas: indexa los catálogos o ejecuta python -m scripts.build_specs")
+    return select_models(req, specs)

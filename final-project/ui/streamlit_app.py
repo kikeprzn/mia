@@ -14,6 +14,7 @@ st.set_page_config(page_title="Agitadores Autmix · RAG", page_icon="🌀")
 pg = st.navigation([
     st.Page("views/chat.py", title="Preguntar", icon="💬", default=True),
     st.Page("views/compare.py", title="Comparar", icon="📊"),
+    st.Page("views/select.py", title="Seleccionar", icon="🎯"),
 ])
 
 with st.sidebar:
@@ -33,6 +34,8 @@ with st.sidebar:
             st.success(f"{result['documents']} documentos · {result['chunks']} chunks indexados")
             for reason in result["skipped"]:
                 st.warning(reason)
+            for warning in result["warnings"]:
+                st.warning(warning)
     st.header("Ajustes")
     st.slider("Pasajes a recuperar (top_k)", min_value=1, max_value=10, value=3, key="top_k")
 
