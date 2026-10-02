@@ -89,16 +89,48 @@ acertaba 6 de 8. Con un presupuesto de razonamiento de 1,024 tokens acertó
   distancia coseno. Nunca calcula embeddings: su embedder por defecto está
   desactivado.
 
+## Extensiones
+
+Además del sistema pedido, la interfaz tiene tres páginas más, cada una
+construida sobre el mismo índice:
+
+- **Comparar modelos.** Una comparación no busca por similitud: necesita la
+  ficha completa de cada modelo, así que recupera todos sus chunks. Por eso la
+  lista de materiales del NC-NCS, partida entre dos chunks, aparece completa
+  aquí. Gemini llena una tabla con esquema JSON y Python valida cada celda: una
+  cita solo vale si apunta a los pasajes de ese mismo modelo. En las pruebas,
+  Gemini escribió nombres de serie tomados del texto en vez de los títulos
+  pedidos; identificar los modelos con letras (A–D) que el esquema obliga a
+  usar lo resolvió. Una restricción en el esquema es una garantía; una
+  instrucción en el prompt es solo una petición.
+- **Seleccionar agitador.** Gemini lee cada catálogo **una sola vez**, al
+  indexarlo, y lo convierte en rangos numéricos con su página. La selección es
+  luego una comparación en Python: instantánea, gratuita y siempre igual. El
+  punto débil pasa a la extracción, por eso un script la valida contra el
+  texto (103 cotas numéricas encontradas); detectó dos errores reales que se
+  corrigieron: recubrimientos mezclados con materiales y un diámetro de hélice
+  asignado al ancla. También acepta requisitos en español (*"tanque de 3 m³ en
+  titanio"*): Gemini propone los valores y Python los verifica.
+- **Ver la página citada.** Cada cita muestra la página del catálogo de donde
+  viene, renderizada en la API.
+- **Mapa de embeddings.** Una proyección PCA de los 35 vectores muestra que el
+  índice se organiza más por **tipo de página** que por familia de agitador
+  (separación 2.24 frente a 1.11): la plantilla común domina los embeddings,
+  lo que confirma la decisión de anteponer el nombre del modelo a cada chunk.
+  Los dos ejes conservan solo el 35% de la variación, así que las líneas hacia
+  los vecinos reales se calculan con las 3,072 dimensiones.
+
 ## Limitaciones
 
 - **Las preguntas sobre todo el catálogo** (*¿qué agitadores maneja Autmix?*)
-  reciben una respuesta parcial: el top-k devuelve 3 chunks, no uno por
-  catálogo.
+  reciben en el chat una respuesta parcial: el top-k devuelve 3 chunks, no uno
+  por catálogo. El selector y la comparación cubren este caso, porque trabajan
+  sobre todos los modelos.
 - **Las recomendaciones de aplicación no están en el texto.** Los catálogos
   muestran las industrias como íconos, así que *¿qué agitador para yogur?* se
   abstiene, correctamente.
 - **Los cortes entre chunks pueden partir listas.** La lista de materiales del
-  NC-NCS ocupa dos chunks, y una respuesta que solo recuperó el segundo omitió
-  304 y 316L.
+  NC-NCS ocupa dos chunks, y una respuesta del chat que solo recuperó el
+  segundo omitió 304 y 316L.
 - **Los ids de los chunks vienen del nombre del archivo**, así que el mismo
   PDF subido con otro nombre se indexa dos veces.
